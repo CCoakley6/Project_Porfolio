@@ -50,11 +50,11 @@ class Hand:
     def add_card(self, card):
         self.cards.append(card)
         self.value += values[card.rank]
-        if card.rank == 'Ace'
+        if card.rank == 'Ace':
             self.aces += 1
 
     def adjust_for_ace(self):
-        while self.values > 21 and self.aces:
+        while self.value > 21 and self.aces:
             self.value -= 10
             self.aces -= 1
 
@@ -74,7 +74,7 @@ class Chips:
 def make_bet(chips):
     while True:
         try:
-            chips.bet = int(input("How much would you like to wager?"))
+            chips.bet = int(input("\nHow much would you like to wager?"))
         except ValueError:
             print("Wager must be an integer")
         else:
@@ -82,6 +82,30 @@ def make_bet(chips):
                 print("Bet cannot exceed", chips.total)
             else:
                 break
+
+# Function to hit
+def hit(deck, hand):
+    hand.add_card(deck.deal())
+    hand.adjust_for_ace()
+
+# Function to hit/stay
+def hit_or_stay(deck, hand):
+    global playing
+
+    while True:
+        hit_stay = input("\nDo you want to hit or stay? 'h' for hit, 's' for stay")
+
+        if hit_stay[0].lower() == 'h':
+            hit(deck, hand)
+
+        elif hit_stay[0] == 's':
+            print("Player chooses to stay. Dealer's turn.")
+            playing = False
+
+        else:
+            print("Invalid selection. Please type 'h' to hit or 's' to stay")
+            continue
+        break
 
 # Functions to display cards
 def show_partial(player, dealer):
@@ -142,6 +166,47 @@ while True:
 
     # While loop depending on hitting or staying
     while playing:
+
+        hit_or_stay(deck, player_hand)
+
+        show_partial(player_hand, dealer_hand)
+
+        if player_hand.value > 21:
+            player_busts(player_hand, dealer_hand, player_chips)
+            break
+
+    if player_hand.value <= 21:
+        while dealer_hand.value < 17:
+            hit(deck, dealer_hand)
+
+        show_all(player_hand, dealer_hand)
+
+        # Win/loss scenario conditions
+        if dealer_hand.value > 21:
+            dealer_busts(player_hand, dealer_hand, player_chips)
+
+        elif dealer_hand.value > player_hand.value:
+            dealer_wins(player_hand, dealer_hand, player_chips)
+
+        elif dealer_hand.value < player_hand.value:
+            player_wins(player_hand, dealer_hand, player_chips)
+
+        else:
+            tie(player_hand, dealer_hand)
+
+    # Update player re current chips
+    print("\nPlayer current chips are", player_chips.total)
+
+    # New game check
+    continue_playing = input("Would you like to play another round? 'y' or 'n'")
+    if continue_playing[0].lower() == 'y':
+        playing = True
+        continue
+    else:
+        print("Game over. Please come again!")
+        break
+
+
 
 
 
